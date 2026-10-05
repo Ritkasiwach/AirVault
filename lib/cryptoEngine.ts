@@ -6,7 +6,7 @@ const enc = new TextEncoder();
 export async function deriveRoomKey(roomCode: string): Promise<CryptoKey> {
   const keyMaterial = await window.crypto.subtle.importKey(
     "raw",
-    enc.encode(roomCode.toUpperCase()),
+    enc.encode(roomCode.toUpperCase()) as BufferSource,
     { name: "PBKDF2" },
     false,
     ["deriveKey"]
@@ -15,7 +15,7 @@ export async function deriveRoomKey(roomCode: string): Promise<CryptoKey> {
   return window.crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
-      salt: enc.encode("airvault-zero-trust-salt-v1"),
+      salt: enc.encode("airvault-zero-trust-salt-v1") as BufferSource,
       iterations: 100000,
       hash: "SHA-256",
     },
@@ -34,7 +34,7 @@ export async function encryptChunk(
   // Har chunk ke liye fresh 12-byte random IV
   const iv = window.crypto.getRandomValues(new Uint8Array(12));
   const cipherBuffer = await window.crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
+    { name: "AES-GCM", iv: iv as BufferSource },
     key,
     plainBuffer
   );
@@ -49,7 +49,7 @@ export async function decryptChunk(
 ): Promise<ArrayBuffer> {
   const iv = ivInput instanceof Uint8Array ? ivInput : new Uint8Array(ivInput);
   return window.crypto.subtle.decrypt(
-    { name: "AES-GCM", iv },
+    { name: "AES-GCM", iv: iv as BufferSource },
     key,
     cipherBuffer
   );
